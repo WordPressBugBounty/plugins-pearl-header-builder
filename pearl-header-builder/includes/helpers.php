@@ -27,9 +27,10 @@ function stm_output_vars() {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	if ( ! empty( $_GET['hb'] ) && sanitize_title( $_GET['hb'] ) !== $default_hb ) {
 		$delete_args = array(
-			'page'      => 'stm_header_builder',
-			'hb'        => sanitize_title( $_GET['hb'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			'delete_hb' => true,
+			'page'                => 'stm_header_builder',
+			'hb'                  => sanitize_title( $_GET['hb'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			'delete_hb'           => true,
+			'stm_hb_action_nonce' => wp_create_nonce( 'stm_hb_action_nonce' ),
 		);
 
 		/* translators: %s Header Name */
@@ -59,7 +60,7 @@ function stm_output_vars() {
 		var ngAdminUrl = "<?php echo esc_url( admin_url() ); ?>";
 		var ngThemePath = "<?php echo esc_url( get_template_directory_uri() . '/' ); ?>";
 		<?php if ( ! empty( $delete_args ) ) : ?>
-		var ngDeleteUrl = "<?php echo esc_url( add_query_arg( $delete_args, admin_url() ) ); ?>";
+		var ngDeleteUrl = "<?php echo esc_url_raw( add_query_arg( $delete_args, admin_url() ) ); ?>";
 		var ngCurrentHb = '<?php echo wp_kses_post( $current_header ); ?>';
 		<?php endif; ?>
 		var ngCurrentHbName = '<?php echo wp_kses_post( $current_hb ); ?>';
@@ -292,26 +293,30 @@ function stm_hb_add_new() {
 add_action( 'init', 'stm_hb_add_new' );
 
 function stm_hb_delete() {
+	if ( empty( $_GET['delete_hb'] ) ) {
+		return;
+	}
 	if ( ! is_user_logged_in() && ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
+	if ( empty( $_GET['stm_hb_action_nonce'] ) || ! wp_verify_nonce( $_GET['stm_hb_action_nonce'] ?? '', 'stm_hb_action_nonce' ) ) {
+		wp_die( esc_html__( 'Invalid nonce. Action not allowed.', 'pearl-header-builder' ) );
+	}
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( ! empty( $_GET['delete_hb'] ) && $_GET['delete_hb'] ) {
-		$hb_name      = stm_hb_save_name();
-		$default_name = stm_hb_default_name();
+	$hb_name      = stm_hb_save_name();
+	$default_name = stm_hb_default_name();
 
-		if ( $hb_name === $default_name ) {
-			return;
-		}
+	if ( $hb_name === $default_name ) {
+		return;
+	}
 
-		$variants      = stm_get_hb_variants();
-		$variants_name = stm_hb_variants_name();
+	$variants      = stm_get_hb_variants();
+	$variants_name = stm_hb_variants_name();
 
-		if ( ! empty( $variants[ $hb_name ] ) ) {
-			unset( $variants[ $hb_name ] );
-			update_option( $variants_name, $variants );
-			delete_option( $hb_name );
-		}
+	if ( ! empty( $variants[ $hb_name ] ) ) {
+		unset( $variants[ $hb_name ] );
+		update_option( $variants_name, $variants );
+		delete_option( $hb_name );
 	}
 }
 add_action( 'admin_init', 'stm_hb_delete', 0 );
