@@ -1,9 +1,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: WordPress Header Builder Plugin – Pearl\n"
+"Project-Id-Version: Pearl - Header Builder\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-18 12:50+0000\n"
+"POT-Creation-Date: 2025-08-13 07:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -13,7 +13,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.4.4; wp-5.5.3"
+"X-Loco-Version: 2.8.0; wp-6.8.2; php-8.1.9\n"
+"X-Domain: pearl-header-builder"
+
+#: hb_templates/elements/cart/quantity_with_text.php:4
+msgid "%d item in Cart"
+msgid_plural "%d items in Cart"
+msgstr[0] ""
+msgstr[1] ""
 
 #: includes/js_translations.php:65
 msgid "Add icon"
@@ -23,7 +30,7 @@ msgstr ""
 msgid "Add Image"
 msgstr ""
 
-#: includes/views/hb_variants.php:40
+#: includes/views/hb_variants.php:53
 msgid "Add new header"
 msgstr ""
 
@@ -35,7 +42,7 @@ msgstr ""
 msgid "Add Url"
 msgstr ""
 
-#: includes/helpers.php:56
+#: includes/helpers.php:42
 msgid "Beauty"
 msgstr ""
 
@@ -79,7 +86,7 @@ msgstr ""
 msgid "Change office name"
 msgstr ""
 
-#: includes/helpers.php:61
+#: includes/helpers.php:47
 msgid "Charity"
 msgstr ""
 
@@ -87,11 +94,11 @@ msgstr ""
 msgid "Checkout"
 msgstr ""
 
-#: includes/helpers.php:63
+#: includes/helpers.php:49
 msgid "Church"
 msgstr ""
 
-#: includes/helpers.php:55
+#: includes/helpers.php:41
 msgid "Construction"
 msgstr ""
 
@@ -107,11 +114,12 @@ msgstr ""
 msgid "Default"
 msgstr ""
 
-#: includes/helpers.php:322
+#: includes/helpers.php:331
 msgid "Default Header"
 msgstr ""
 
-#: includes/helpers.php:51
+#. %s Header Name
+#: includes/helpers.php:37
 #, php-format
 msgid "Delete \"%s\""
 msgstr ""
@@ -136,7 +144,7 @@ msgstr ""
 msgid "Dropdown URL"
 msgstr ""
 
-#: frontend/includes.php:630
+#: frontend/includes.php:621
 msgid "English"
 msgstr ""
 
@@ -152,7 +160,7 @@ msgstr ""
 msgid "Enter Dropdown URL"
 msgstr ""
 
-#: includes/views/hb_variants.php:37
+#: includes/views/hb_variants.php:48
 msgid "Enter header name"
 msgstr ""
 
@@ -188,7 +196,7 @@ msgstr ""
 msgid "Enter Url"
 msgstr ""
 
-#: includes/helpers.php:275
+#: includes/helpers.php:265
 msgid "Error occured"
 msgstr ""
 
@@ -208,15 +216,15 @@ msgstr ""
 msgid "Header Builder"
 msgstr ""
 
-#: includes/helpers.php:452
+#: includes/helpers.php:471
 msgid "Header imported, reloading page"
 msgstr ""
 
-#: includes/helpers.php:436
+#: includes/helpers.php:455
 msgid "Header with this name already exists"
 msgstr ""
 
-#: includes/helpers.php:59
+#: includes/helpers.php:45
 msgid "Healthcoach"
 msgstr ""
 
@@ -232,12 +240,12 @@ msgstr ""
 msgid "Hover line color"
 msgstr ""
 
-#. URI of the plugin
-msgid "http://hb.stylemixthemes.com"
+#. Author URI of the plugin
+msgid "https://stylemixthemes.com"
 msgstr ""
 
-#. Author URI of the plugin
-msgid "http://stylemixthemes.com"
+#. URI of the plugin
+msgid "https://stylemixthemes.com/headerbuilder/"
 msgstr ""
 
 #: includes/js_translations.php:35
@@ -272,11 +280,16 @@ msgstr ""
 msgid "Inner menu levels text color"
 msgstr ""
 
-#: includes/views/hb_variants.php:47
+#. %s: Shortcode to the header template
+#: includes/views/hb_variants.php:61
 #, php-format
 msgid ""
 "Insert shortcode or action to display your builded header in <a href=\"%s\" "
 "target=\"_blank\">header template</a>"
+msgstr ""
+
+#: includes/helpers.php:282 includes/helpers.php:309
+msgid "Invalid nonce. Action not allowed."
 msgstr ""
 
 #: includes/js_translations.php:76
@@ -307,11 +320,7 @@ msgstr ""
 msgid "Line 2 url"
 msgstr ""
 
-#: hb_templates/elements/signin/signin.php:9
-msgid "Login / Register"
-msgstr ""
-
-#: includes/helpers.php:58
+#: includes/helpers.php:44
 msgid "Medical"
 msgstr ""
 
@@ -331,23 +340,19 @@ msgstr ""
 msgid "Modal width"
 msgstr ""
 
-#: includes/helpers.php:60
+#: includes/helpers.php:46
 msgid "Music"
-msgstr ""
-
-#: hb_templates/elements/signin/signin.php:6
-msgid "My account"
 msgstr ""
 
 #: hb_templates/elements/cart/mini-cart.php:43
 msgid "No products in the cart."
 msgstr ""
 
-#: includes/helpers.php:176
+#: includes/helpers.php:164
 msgid "None"
 msgstr ""
 
-#: includes/helpers.php:272
+#: includes/helpers.php:262
 msgid "Nothing to save"
 msgstr ""
 
@@ -355,11 +360,12 @@ msgstr ""
 msgid "Office name"
 msgstr ""
 
-#: includes/helpers.php:458
+#: includes/helpers.php:477
 msgid "Option with this name already exists"
 msgstr ""
 
-#: includes/views/hb_variants.php:29
+#. %s: URL to create a new header
+#: includes/views/hb_variants.php:31
 #, php-format
 msgid "or <a href=\"%s\">create a new header</a>."
 msgstr ""
@@ -368,14 +374,22 @@ msgstr ""
 msgid "Outline"
 msgstr ""
 
+#. Name of the plugin
+msgid "Pearl - Header Builder"
+msgstr ""
+
 #. Description of the plugin
 msgid ""
 "Pearl Header Builder gives you complete freedom to compose a header that "
 "perfectly suits your site."
 msgstr ""
 
-#: includes/helpers.php:66
+#: includes/helpers.php:52
 msgid "Personal_blog"
+msgstr ""
+
+#: includes/helpers.php:500
+msgid "Please, upload json file"
 msgstr ""
 
 #: hb_templates/elements/filter/filter.php:28
@@ -394,7 +408,7 @@ msgstr ""
 msgid "Remove Image"
 msgstr ""
 
-#: includes/helpers.php:62
+#: includes/helpers.php:48
 msgid "Rental"
 msgstr ""
 
@@ -402,7 +416,7 @@ msgstr ""
 msgid "Replace Image"
 msgstr ""
 
-#: includes/helpers.php:65
+#: includes/helpers.php:51
 msgid "Restaurant"
 msgstr ""
 
@@ -418,7 +432,7 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: includes/views/hb_variants.php:17
+#: includes/views/hb_variants.php:16
 msgid "Select a header to edit:"
 msgstr ""
 
@@ -438,7 +452,7 @@ msgstr ""
 msgid "Select style"
 msgstr ""
 
-#: includes/helpers.php:270
+#: includes/helpers.php:260
 msgid "Settings Saved"
 msgstr ""
 
@@ -489,7 +503,7 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-#: includes/helpers.php:57
+#: includes/helpers.php:43
 msgid "Transportation"
 msgstr ""
 
@@ -513,10 +527,6 @@ msgstr ""
 msgid "View cart"
 msgstr ""
 
-#: includes/helpers.php:64
+#: includes/helpers.php:50
 msgid "Viral"
-msgstr ""
-
-#. Name of the plugin
-msgid "WordPress Header Builder Plugin – Pearl"
 msgstr ""

@@ -1,9 +1,8 @@
-<?php if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+<?php
+defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 
 function stm_header_builder_styles( $hook ) {
-	/*Enqueue styles and scripts only for theme options*/
+	/* Enqueue styles and scripts only for theme options */
 	$allowed_pages = array(
 		'toplevel_page_stm_header_builder',
 	);
@@ -39,8 +38,6 @@ function stm_header_builder_styles( $hook ) {
 	wp_enqueue_style( 'fontawesome', $theme_info['frontend_css'] . 'font-awesome.min.css', null, $theme_info['v'] );
 
 	wp_enqueue_style( 'nav-menus' );
-	// phpcs:ignore
-	// wp_enqueue_style('fontIconPicker', $theme_info['css'] . 'jquery.fonticonpicker.min.css', null, $theme_info['v']);
 
 	wp_enqueue_script( 'stm_theme_options_vendors', $theme_info['vendors'] . 'vendor.js', null, $theme_info['v'], 'all' );
 	wp_enqueue_script( 'pearl_theme_options_app', $theme_info['js'] . 'app.min.js', null, $theme_info['v'], 'all' );
@@ -54,8 +51,22 @@ function stm_header_builder_styles( $hook ) {
 	);
 
 	stm_hb_js_translations();
-	// phpcs:ignore
-	//wp_enqueue_script('fontIconPicker', $theme_info['js'] . 'jquery.fonticonpicker.min.js', null, $theme_info['v'], 'all');
+
+	$delete_hb = filter_input( INPUT_GET, 'delete_hb', FILTER_UNSAFE_RAW );
+	if ( ! empty( $delete_hb ) ) {
+		$args      = array( 'page' => 'stm_header_builder' );
+		$admin_url = add_query_arg( $args, admin_url() );
+
+		wp_add_inline_script(
+			'pearl_theme_options_app',
+			sprintf(
+				"jQuery(document).ready(function () {
+					window.history.pushState('', '', %s);
+				});",
+				wp_json_encode( esc_url_raw( $admin_url ) )
+			)
+		);
+	}
 }
 
 add_action( 'admin_enqueue_scripts', 'stm_header_builder_styles' );

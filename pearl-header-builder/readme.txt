@@ -1,10 +1,11 @@
-=== WordPress Header Builder Plugin – Pearl ===
+=== Pearl - Header Builder ===
 
 Contributors: Stylemix
+Donate link: https://stylemixthemes.com/
 Tags: Header Builder, Customized header, Header, Pearl Header Builder
 Requires at least: 4.6
-Tested up to: 6.3
-Stable tag: 1.3.9
+Tested up to: 6.8
+Stable tag: 1.3.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,7 +100,6 @@ https://www.youtube.com/watch?v=1Yz-srOHbt0
 ## More Awesome Free Plugins by Stylemix
 ⭐ [Cost Calculator & Price Estimation Plugin](https://wordpress.org/plugins/cost-calculator-builder/)
 ⭐ [Zoom Meetings and Webinars Plugin — eRoom](https://wordpress.org/plugins/eroom-zoom-meetings-webinar/)
-⭐ [BookIt - a free booking calendar plugin](https://wordpress.org/plugins/bookit/)
 ⭐ [MasterStudy - All-in-One WordPress LMS Plugin](https://wordpress.org/plugins/masterstudy-lms-learning-management-system/)
 ⭐ [Free Classifieds and Listings Plugin - uListing](https://wordpress.org/plugins/ulisting/)
 
@@ -121,6 +121,18 @@ This section describes how to install the plugin and get it working.
 4. Pearl Header Builder
 
 == Changelog ==
+
+= 1.3.13 =
+* Small bug fixes
+
+= 1.3.12 =
+* Small bug fixes
+
+= 1.3.11 =
+* Small bug fixes
+
+= 1.3.10 =
+* Small bug fixes
 
 = 1.3.9 =
 * Small bug fixes

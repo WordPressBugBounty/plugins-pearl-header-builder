@@ -6,12 +6,12 @@ add_shortcode( 'stm_hb', array( 'pearl_header_builder', 'build_from_shortcode' )
 if ( ! class_exists( 'pearl_header_builder' ) ) {
 	class Pearl_Header_Builder {
 
-		public $headerName = 'stm_hb_settings';
+		public $header_name = 'stm_hb_settings';
 
-		public static function build( $headerName ) {
-			$headerName = ( empty( $headerName ) ) ? 'stm_hb_settings' : $headerName;
+		public static function build( $header_name ) {
+			$header_name = ( empty( $header_name ) ) ? 'stm_hb_settings' : $header_name;
 
-			return new self( $headerName );
+			return new self( $header_name );
 		}
 
 		public static function build_from_shortcode( $args, $content = '' ) {
@@ -24,14 +24,14 @@ if ( ! class_exists( 'pearl_header_builder' ) ) {
 		}
 
 		private function __construct( $args ) {
-			$this->headerName = ( ! empty( $args['header'] ) ) ? $args['header'] : 'stm_hb_settings';
+			$this->header_name = ( ! empty( $args['header'] ) ) ? $args['header'] : 'stm_hb_settings';
 			$this->inline_scripts();
 			require_once STM_HB_DIR . 'hb_templates/main.php';
 		}
 
 		public function header_element_custom_styles() {
 			$custom_css = '';
-			$data       = apply_filters( 'pearl_builder_elements', stm_hb_get_option( 'header_builder', false, $this->headerName ) );
+			$data       = apply_filters( 'pearl_builder_elements', stm_hb_get_option( 'header_builder', false, $this->header_name ) );
 			if ( empty( $data ) ) {
 				return null;
 			}
@@ -74,9 +74,7 @@ if ( ! class_exists( 'pearl_header_builder' ) ) {
 							}
 
 							/*Menu item hover line*/
-							if ( array_has( $data, 'data.lineColor' ) && ! empty( $data['data']['lineColor'] ) &&
-								 array_has( $data, 'data.line' ) && ! empty( $data['data']['line'] )
-							) {
+							if ( array_has( $data, 'data.lineColor' ) && ! empty( $data['data']['lineColor'] ) && array_has( $data, 'data.line' ) && ! empty( $data['data']['line'] ) ) {
 								$custom_css .= $element . " li:before {background-color: {$data['data']['lineColor']} !important;}";
 							}
 
@@ -104,7 +102,7 @@ if ( ! class_exists( 'pearl_header_builder' ) ) {
 							$disabled_devices = ( ! empty( $data['disabled'] ) ) ? array_keys( array_filter( $data['disabled'] ) ) : array();
 							if ( ! empty( $disabled_devices ) ) {
 								foreach ( $media as $device => $breakpoint ) {
-									if ( in_array( $device, $disabled_devices ) ) {
+									if ( in_array( $device, $disabled_devices, true ) ) {
 										$custom_css .= "@media {$breakpoint} {";
 										$custom_css .= $element . '{display: none!important};';
 										$custom_css .= '}';
@@ -121,130 +119,129 @@ if ( ! class_exists( 'pearl_header_builder' ) ) {
 
 		public function header_elements_styles() {
 			$custom_css    = '';
-			$top_bar_bg    = stm_hb_get_image_url( stm_hb_get_option( 'top_bar_bg', false, $this->headerName ) );
-			$header_bg     = stm_hb_get_image_url( stm_hb_get_option( 'header_bg', false, $this->headerName ) );
-			$bottom_bar_bg = stm_hb_get_image_url( stm_hb_get_option( 'bottom_bar_bg', false, $this->headerName ) );
-			$all_bg        = stm_hb_get_image_url( stm_hb_get_option( 'all_bg', false, $this->headerName ) );
-			$all_bg_color  = stm_hb_get_option( 'all_bg_color', false, $this->headerName );
+			$top_bar_bg    = stm_hb_get_image_url( stm_hb_get_option( 'top_bar_bg', false, $this->header_name ) );
+			$header_bg     = stm_hb_get_image_url( stm_hb_get_option( 'header_bg', false, $this->header_name ) );
+			$bottom_bar_bg = stm_hb_get_image_url( stm_hb_get_option( 'bottom_bar_bg', false, $this->header_name ) );
+			$all_bg        = stm_hb_get_image_url( stm_hb_get_option( 'all_bg', false, $this->header_name ) );
 
-			$top_bar_width    = stm_hb_get_option( 'top_bar_width', false, $this->headerName );
-			$header_width     = stm_hb_get_option( 'header_width', false, $this->headerName );
-			$bottom_bar_width = stm_hb_get_option( 'bottom_bar_width', false, $this->headerName );
+			$top_bar_width    = stm_hb_get_option( 'top_bar_width', false, $this->header_name );
+			$header_width     = stm_hb_get_option( 'header_width', false, $this->header_name );
+			$bottom_bar_width = stm_hb_get_option( 'bottom_bar_width', false, $this->header_name );
 
 			$styles = array(
 				'.stm-header'                          => array(
 					'background-image' => esc_url( $all_bg ),
 				),
 				'.stm-header:before'                   => array(
-					'background-color' => stm_hb_get_option( 'all_bg_color', false, $this->headerName ),
+					'background-color' => stm_hb_get_option( 'all_bg_color', false, $this->header_name ),
 				),
 				'.stm-header__row_color_top'           => array(
-					'padding-top'                          => stm_hb_get_option( 'top_bar_top', false, $this->headerName ),
-					'padding-bottom'                       => stm_hb_get_option( 'top_bar_bottom', false, $this->headerName ),
-					'margin-top'                           => stm_hb_get_option( 'top_bar_top_margin', false, $this->headerName ),
-					'margin-bottom'                        => stm_hb_get_option( 'top_bar_bottom_margin', false, $this->headerName ),
+					'padding-top'                          => stm_hb_get_option( 'top_bar_top', false, $this->header_name ),
+					'padding-bottom'                       => stm_hb_get_option( 'top_bar_bottom', false, $this->header_name ),
+					'margin-top'                           => stm_hb_get_option( 'top_bar_top_margin', false, $this->header_name ),
+					'margin-bottom'                        => stm_hb_get_option( 'top_bar_bottom_margin', false, $this->header_name ),
 					'background-image'                     => esc_url( $top_bar_bg ),
-					'color'                                => stm_hb_get_option( 'top_bar_text_color', false, $this->headerName ),
-					'z-index'                              => stm_hb_get_option( 'top_bar_zindex', false, $this->headerName ),
+					'color'                                => stm_hb_get_option( 'top_bar_text_color', false, $this->header_name ),
+					'z-index'                              => stm_hb_get_option( 'top_bar_zindex', false, $this->header_name ),
 					'.stm-icontext__text'                  => array(
-						'color' => stm_hb_get_option( 'top_bar_text_color', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'top_bar_text_color', false, $this->header_name ),
 					),
 					'a'                                    => array(
-						'color' => stm_hb_get_option( 'top_bar_text_color', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'top_bar_text_color', false, $this->header_name ),
 					),
 					'.dropdown-toggle'                     => array(
-						'color' => stm_hb_get_option( 'top_bar_text_color', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'top_bar_text_color', false, $this->header_name ) . '!important',
 					),
 					'a:hover, .stm-navigation__default > ul > li > a:hover' => array(
-						'color' => stm_hb_get_option( 'top_bar_link_color_hover', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'top_bar_link_color_hover', false, $this->header_name ) . '!important',
 					),
 					'li:hover a'                           => array(
-						'color' => stm_hb_get_option( 'top_bar_link_color_hover', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'top_bar_link_color_hover', false, $this->header_name ),
 					),
 					'.stm-switcher__trigger_default:after' => array(
-						'border-top-color' => stm_hb_get_option( 'top_bar_text_color', false, $this->headerName ),
+						'border-top-color' => stm_hb_get_option( 'top_bar_text_color', false, $this->header_name ),
 					),
 					'.dropdown-toggle:after'               => array(
-						'border-top-color' => stm_hb_get_option( 'top_bar_text_color', false, $this->headerName ) . '!important',
+						'border-top-color' => stm_hb_get_option( 'top_bar_text_color', false, $this->header_name ) . '!important',
 					),
 				),
 				'.stm-header__row_color_top:before'    => array(
-					'background-color' => stm_hb_get_option( 'top_bar_color', false, $this->headerName ),
+					'background-color' => stm_hb_get_option( 'top_bar_color', false, $this->header_name ),
 				),
 				'.stm-header__row_color_center'        => array(
-					'padding-top'                          => stm_hb_get_option( 'header_top', false, $this->headerName ),
-					'padding-bottom'                       => stm_hb_get_option( 'header_bottom', false, $this->headerName ),
-					'margin-top'                           => stm_hb_get_option( 'header_top_margin', false, $this->headerName ),
-					'margin-bottom'                        => stm_hb_get_option( 'header_bottom_margin', false, $this->headerName ),
+					'padding-top'                          => stm_hb_get_option( 'header_top', false, $this->header_name ),
+					'padding-bottom'                       => stm_hb_get_option( 'header_bottom', false, $this->header_name ),
+					'margin-top'                           => stm_hb_get_option( 'header_top_margin', false, $this->header_name ),
+					'margin-bottom'                        => stm_hb_get_option( 'header_bottom_margin', false, $this->header_name ),
 					'background-image'                     => esc_url( $header_bg ),
-					'color'                                => stm_hb_get_option( 'header_text_color', false, $this->headerName ),
-					'z-index'                              => stm_hb_get_option( 'header_zindex', false, $this->headerName ),
+					'color'                                => stm_hb_get_option( 'header_text_color', false, $this->header_name ),
+					'z-index'                              => stm_hb_get_option( 'header_zindex', false, $this->header_name ),
 					'.stm-icontext__text'                  => array(
-						'color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ),
 					),
 					'a'                                    => array(
-						'color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ),
 					),
 					'.dropdown-toggle'                     => array(
-						'color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ) . '!important',
 					),
 					'li:hover > a'                         => array(
-						'color' => stm_hb_get_option( 'header_text_color_hover', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'header_text_color_hover', false, $this->header_name ) . '!important',
 					),
 					'a:hover, .stm-navigation__default > ul > li > a:hover' => array(
-						'color' => stm_hb_get_option( 'header_text_color_hover', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'header_text_color_hover', false, $this->header_name ) . '!important',
 					),
 					'a > .divider'                         => array(
-						'color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ) . '!important',
 					),
 					'a:hover > .divider'                   => array(
-						'color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ) . '!important',
 					),
 					'li:hover > a > .divider'              => array(
-						'color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ) . '!important',
 					),
 					'.stm-switcher__trigger_default:after' => array(
-						'border-top-color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ),
+						'border-top-color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ),
 					),
 					'.dropdown-toggle:after'               => array(
-						'border-top-color' => stm_hb_get_option( 'header_text_color', false, $this->headerName ) . '!important',
+						'border-top-color' => stm_hb_get_option( 'header_text_color', false, $this->header_name ) . '!important',
 					),
 				),
 				'.stm-header__row_color_center:before' => array(
-					'background-color' => stm_hb_get_option( 'header_color', false, $this->headerName ),
+					'background-color' => stm_hb_get_option( 'header_color', false, $this->header_name ),
 				),
 				'.stm-header__row_color_bottom'        => array(
-					'padding-top'                          => stm_hb_get_option( 'bottom_bar_top', false, $this->headerName ),
-					'padding-bottom'                       => stm_hb_get_option( 'bottom_bar_bottom', false, $this->headerName ),
-					'margin-top'                           => stm_hb_get_option( 'bottom_bar_top_margin', false, $this->headerName ),
-					'margin-bottom'                        => stm_hb_get_option( 'bottom_bar_bottom_margin', false, $this->headerName ),
+					'padding-top'                          => stm_hb_get_option( 'bottom_bar_top', false, $this->header_name ),
+					'padding-bottom'                       => stm_hb_get_option( 'bottom_bar_bottom', false, $this->header_name ),
+					'margin-top'                           => stm_hb_get_option( 'bottom_bar_top_margin', false, $this->header_name ),
+					'margin-bottom'                        => stm_hb_get_option( 'bottom_bar_bottom_margin', false, $this->header_name ),
 					'background-image'                     => esc_url( $bottom_bar_bg ),
-					'color'                                => stm_hb_get_option( 'bottom_bar_text_color', false, $this->headerName ),
-					'z-index'                              => stm_hb_get_option( 'bottom_bar_zindex', false, $this->headerName ),
+					'color'                                => stm_hb_get_option( 'bottom_bar_text_color', false, $this->header_name ),
+					'z-index'                              => stm_hb_get_option( 'bottom_bar_zindex', false, $this->header_name ),
 					'.stm-icontext__text'                  => array(
-						'color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->header_name ),
 					),
 					'a'                                    => array(
-						'color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->header_name ),
 					),
 					'.dropdown-toggle'                     => array(
-						'color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->header_name ) . '!important',
 					),
 					'a:hover, .stm-navigation__default > ul > li > a:hover' => array(
-						'color' => stm_hb_get_option( 'bottom_bar_link_color_hover', false, $this->headerName ) . '!important',
+						'color' => stm_hb_get_option( 'bottom_bar_link_color_hover', false, $this->header_name ) . '!important',
 					),
 					'li:hover a'                           => array(
-						'color' => stm_hb_get_option( 'bottom_bar_link_color_hover', false, $this->headerName ),
+						'color' => stm_hb_get_option( 'bottom_bar_link_color_hover', false, $this->header_name ),
 					),
 					'.stm-switcher__trigger_default:after' => array(
-						'border-top-color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->headerName ),
+						'border-top-color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->header_name ),
 					),
 					'.dropdown-toggle:after'               => array(
-						'border-top-color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->headerName ) . '!important',
+						'border-top-color' => stm_hb_get_option( 'bottom_bar_text_color', false, $this->header_name ) . '!important',
 					),
 				),
 				'.stm-header__row_color_bottom:before' => array(
-					'background-color' => stm_hb_get_option( 'bottom_bar_color', false, $this->headerName ),
+					'background-color' => stm_hb_get_option( 'bottom_bar_color', false, $this->header_name ),
 				),
 			);
 
@@ -293,7 +290,31 @@ if ( ! class_exists( 'pearl_header_builder' ) ) {
 			return $custom_css;
 		}
 
-		public function get_custom_styled_elements_array() {
+		/**
+		 * Helper: build one CSS rule string for selectors.
+		 *
+		 * @param string[] $selectors
+		 * @param string   $property
+		 * @param string   $value
+		 * @return string
+		 */
+		public function stm_hb_build_css_rule( array $selectors, string $property, string $value ): string {
+			$selectors = array_filter( array_map( 'trim', $selectors ) );
+			if ( '' === $value || empty( $selectors ) ) {
+				return '';
+			}
+
+			$selectors_str = implode( ',', $selectors );
+
+			return sprintf(
+				'%s{%s:%s !important}',
+				esc_html( $selectors_str ),
+				esc_html( wp_strip_all_tags( $property, true ) ),
+				esc_html( wp_strip_all_tags( $value, true ) )
+			);
+		}
+
+		public function get_custom_styled_elements_array(): string {
 			$elements_list = array(
 				'colors'        => array(
 					'main_color'      => array(
@@ -382,60 +403,41 @@ if ( ! class_exists( 'pearl_header_builder' ) ) {
 				),
 			);
 
-			$main_color      = stm_hb_get_option( 'main_color', '#297ee8', $this->headerName );
-			$secondary_color = stm_hb_get_option( 'secondary_color', '#222222', $this->headerName );
-			$third_color     = stm_hb_get_option( 'third_color', '#297ee8', $this->headerName );
+			$css = '';
 
-			/*Color*/
-			$colors = $elements_list['colors'];
-
-			/*Background color*/
-			$bg_colors = $elements_list['bg_colors'];
-
-			/*Border color*/
-			$border_colors = $elements_list['border_colors'];
-
-			ob_start();
-			foreach ( $colors as $color => $elements ) {
-				//phpcs:ignore
-				echo implode( ',', $elements );
-				?>
-				{color: <?php echo sanitize_text_field( ${$color} );//phpcs:ignore ?> !important}
-				<?php
+			foreach ( $elements_list['colors'] as $color_key => $selectors ) {
+				$value = (string) stm_hb_get_option( $color_key, '', $this->header_name );
+				if ( '' !== $value ) {
+					$css .= $this->stm_hb_build_css_rule( $selectors, 'color', $value );
+				}
 			}
 
-			foreach ( $bg_colors as $bg_color => $elements ) {
-				//phpcs:ignore
-				echo implode( ',', $elements );
-				?>
-				{background-color: <?php echo sanitize_text_field( ${$bg_color} );//phpcs:ignore ?> !important}
-				<?php
+			foreach ( $elements_list['bg_colors'] as $color_key => $selectors ) {
+				$value = (string) stm_hb_get_option( $color_key, '', $this->header_name );
+				if ( '' !== $value ) {
+					$css .= $this->stm_hb_build_css_rule( $selectors, 'background-color', $value );
+				}
 			}
 
-			foreach ( $border_colors as $border_color => $elements ) {
-				//phpcs:ignore
-				echo implode( ',', $elements )
-				?>
-				{border-color: <?php echo sanitize_text_field( ${$border_color} );//phpcs:ignore ?> !important}
-				<?php
+			foreach ( $elements_list['border_colors'] as $color_key => $selectors ) {
+				$value = (string) stm_hb_get_option( $color_key, '', $this->header_name );
+				if ( '' !== $value ) {
+					$css .= $this->stm_hb_build_css_rule( $selectors, 'border-color', $value );
+				}
 			}
 
 			//Header width
-			$header_container_width = stm_hb_get_option( 'header_container_width', false, $this->headerName );
-			$header_content_width   = stm_hb_get_option( 'header_content_width', false, $this->headerName );
+			$header_container_width = stm_hb_get_option( 'header_container_width', false, $this->header_name );
+			$header_content_width   = stm_hb_get_option( 'header_content_width', false, $this->header_name );
 
-			if ( ! empty( $header_container_width ) ) {
-				echo ".stm-header{max-width:{$header_container_width}px;}";//phpcs:ignore
+			if ( $header_container_width > 0 ) {
+				$css .= sprintf( '.stm-header{max-width:%dpx;}', $header_container_width );
+			}
+			if ( $header_content_width > 0 ) {
+				$css .= sprintf( '.stm-header__row_color > .container{max-width:%dpx;}', $header_content_width );
 			}
 
-			if ( ! empty( $header_content_width ) ) {
-				echo ".stm-header__row_color > .container{max-width:{$header_content_width}px;}";//phpcs:ignore
-			}
-
-			$styles = ob_get_clean();
-
-			return $styles;
-
+			return $css;
 		}
 
 		public function inline_scripts() {
@@ -444,9 +446,7 @@ if ( ! class_exists( 'pearl_header_builder' ) ) {
 			$styles .= $this->header_elements_styles();
 			$styles .= $this->get_custom_styled_elements_array();
 
-			echo stm_hb_text_sanitize( '<style type="text/css" id="styles-' . esc_attr( $this->headerName ) . '">' ); //phpcs:ignore
-			echo stm_hb_text_sanitize( $styles ); //phpcs:ignore
-			echo stm_hb_text_sanitize( '</style>' );//phpcs:ignore
+			stm_hb_inline_style( $styles, $this->header_name );
 		}
 
 	}
@@ -466,12 +466,6 @@ function stm_hb_get_option( $option_name, $default = false, $hb = '' ) {
 	}
 
 	return $option;
-}
-
-function stm_hb( $a ) {
-	echo '<pre>';
-	print_r( $a );
-	echo '</pre>';
 }
 
 function stm_hb_parts() {
@@ -527,9 +521,21 @@ function stm_hb_locate_builder_element( $templates, $template_name, $__folder ) 
 	return apply_filters( 'stm_listings_locate_template', $located, $templates );
 }
 
-function stm_hb_load_element( $__template, $__vars = array(), $__template_name = '', $__folder = 'elements' ) {
-	extract( $__vars );
-	include stm_hb_locate_builder_element( $__template, $__template_name, $__folder );
+function stm_hb_load_element( string $template, array $vars = array(), string $template_name = '', string $folder = 'elements' ): void {
+	$path = stm_hb_locate_builder_element( $template, $template_name, $folder );
+
+	if ( ! $path || ! file_exists( $path ) ) {
+		return;
+	}
+
+	( function( $_path, array $_vars ) {
+		foreach ( $_vars as $key => $value ) {
+			if ( preg_match( '/^[a-zA-Z_][a-zA-Z0-9_]*$/', $key ) ) {
+				${$key} = $value;
+			}
+		}
+		include $_path;
+	} )( $path, $vars );
 }
 
 function stm_get_assets_path() {
@@ -590,7 +596,7 @@ function stm_hb_array_to_style_string( $arr, $important = false ) {
 function stm_hb_get_wpml_langs() {
 	do_action( 'wpml_add_language_selector' );
 
-	if ( defined( 'ICL_LANGUAGE_CODE' ) ) {
+	if ( defined( 'ICL_LANGUAGE_CODE' ) && function_exists( 'icl_get_languages' ) ) {
 		$current_language_code = ICL_LANGUAGE_CODE;
 		$langs                 = icl_get_languages( 'skip_missing=0' );
 		$wpml                  = array();
@@ -640,7 +646,7 @@ function stm_hb_get_image_url( $id, $size = 'full' ) {
 }
 
 function stm_hb_color_treads( $color ) {
-	$color = ( strlen( $color ) == 6 ) ? "#{$color}" : $color;
+	$color = ( 6 === strlen( $color ) ) ? "#{$color}" : $color;
 
 	return apply_filters( 'pearl_color_treads', $color );
 }
@@ -666,12 +672,12 @@ function stm_hb_get_style( $key = '' ) {
 	);
 
 	/*Set px*/
-	if ( in_array( $key, $metrix ) ) {
+	if ( in_array( $key, $metrix, true ) ) {
 		$r['affix'] = 'px';
 	}
 
 	/*Set url*/
-	if ( in_array( $key, $src ) ) {
+	if ( in_array( $key, $src, true ) ) {
 		$r['prefix'] = 'url("';
 		$r['affix']  = '")';
 	}
@@ -710,3 +716,14 @@ function stm_hb_cart_fragments( $fragments ) {
 }
 
 add_filter( 'woocommerce_add_to_cart_fragments', 'stm_hb_cart_fragments', 1000, 1 );
+
+function stm_hb_inline_style( $style, $element_hash ) {
+	$handle     = 'hb-inline-' . $element_hash . '-' . wp_unique_id();
+	$theme_info = stm_get_assets_path();
+
+	wp_register_style( $handle, false, array(), $theme_info['v'] );
+	wp_enqueue_style( $handle );
+	wp_add_inline_style( $handle, wp_strip_all_tags( $style, true ) );
+
+	wp_print_styles( $handle );
+}

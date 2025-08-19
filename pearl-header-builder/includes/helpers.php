@@ -1,7 +1,5 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit; // Exit if accessed directly
 
 /**
  * Outputs js variables for angular.js
@@ -21,21 +19,23 @@ function stm_output_vars() {
 	$theme_options = stm_set_theme_options_pairs( $theme_options, $stored_theme_options );
 
 	$delete_args = array();
-	$default_hb  = stm_hb_default_name();
-	$current_hb  = stm_hb_current_hb();
+	$default_hb  = (string) stm_hb_default_name();
+	$current_hb  = (string) stm_hb_current_hb();
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( ! empty( $_GET['hb'] ) && sanitize_title( $_GET['hb'] ) !== $default_hb ) {
+	$hb_param_raw = filter_input( INPUT_GET, 'hb', FILTER_UNSAFE_RAW );
+	$hb_param     = is_string( $hb_param_raw ) ? sanitize_title( wp_unslash( $hb_param_raw ) ) : '';
+
+	if ( '' !== $hb_param && $hb_param !== $default_hb ) {
 		$delete_args = array(
 			'page'                => 'stm_header_builder',
-			'hb'                  => sanitize_title( $_GET['hb'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			'hb'                  => $hb_param,
 			'delete_hb'           => true,
 			'stm_hb_action_nonce' => wp_create_nonce( 'stm_hb_action_nonce' ),
 		);
 
 		/* translators: %s Header Name */
 		$current_header = sprintf( __( 'Delete "%s"', 'pearl-header-builder' ), $current_hb );
-	};
+	}
 
 	$hbs = array(
 		'construction'   => esc_html__( 'Construction', 'pearl-header-builder' ),
@@ -52,6 +52,7 @@ function stm_output_vars() {
 		'personal_blog'  => esc_html__( 'Personal_blog', 'pearl-header-builder' ),
 	);
 
+	ob_start();
 	?>
 	<script type="text/javascript">
 		var ngAppPath = "<?php echo esc_url( STM_HB_URL . 'includes/angular_app/' ); ?>";
@@ -60,8 +61,8 @@ function stm_output_vars() {
 		var ngAdminUrl = "<?php echo esc_url( admin_url() ); ?>";
 		var ngThemePath = "<?php echo esc_url( get_template_directory_uri() . '/' ); ?>";
 		<?php if ( ! empty( $delete_args ) ) : ?>
-		var ngDeleteUrl = "<?php echo esc_url_raw( add_query_arg( $delete_args, admin_url() ) ); ?>";
-		var ngCurrentHb = '<?php echo wp_kses_post( $current_header ); ?>';
+		var ngDeleteUrl = "<?php echo esc_url( add_query_arg( $delete_args, admin_url() ) ); ?>";
+		var ngCurrentHb = '<?php echo wp_kses_post( $current_header ?? '' ); ?>';
 		<?php endif; ?>
 		var ngCurrentHbName = '<?php echo wp_kses_post( $current_hb ); ?>';
 		var ngCurrentHeader = "<?php echo esc_html( stm_hb_save_name() ); ?>";
@@ -75,6 +76,14 @@ function stm_output_vars() {
 		<?php stm_icons_set(); ?>
 	</script>
 	<?php
+
+	$inline_js = str_replace(
+		array( '<script type="text/javascript">', '<script>', '</script>' ),
+		'',
+		ob_get_clean()
+	);
+
+	wp_add_inline_script( 'pearl_theme_options_app', $inline_js, 'before' );
 }
 
 /**
@@ -243,108 +252,162 @@ function stm_icons_set() {
 	echo 'var stm_icons = ' . wp_json_encode( apply_filters( 'stm_hb_icons_set', $icons ) ) . ';';
 }
 
-function stm_save_hb_settings() {
-	if ( ! is_user_logged_in() && ! current_user_can( 'manage_options' ) ) {
-		return;
+function stm_save_hb_settings(): void {
+	if ( ! is_user_logged_in() || ! current_user_can( 'edit_theme_options' ) ) {
+		wp_send_json_error(
+			array( 'message' => __( 'You are not allowed to perform this action.', 'pearl-header-builder' ) ),
+			403
+		);
 	}
+
 	check_ajax_referer( 'admin_ajax_nonce', 'nonce' );
 
-	$res = array(
-		'message' => '',
-	);
+	$raw = filter_input_array( INPUT_POST, FILTER_UNSAFE_RAW );
 
-	if ( current_user_can( 'edit_theme_options' ) ) {
-		if ( ! empty( $_POST ) ) {
-			$updated = stm_update_theme_options( $_POST );
-			if ( $updated ) {
-				$res['message'] = esc_html__( 'Settings Saved', 'pearl-header-builder' );
-			} else {
-				$res['message'] = esc_html__( 'Nothing to save', 'pearl-header-builder' );
-			}
-		} else {
-			$res['message'] = esc_html__( 'Error occured', 'pearl-header-builder' );
-		}
+	if ( empty( $raw ) ) {
+		wp_send_json_error(
+			array( 'message' => __( 'No data received.', 'pearl-header-builder' ) ),
+			400
+		);
 	}
 
-	echo wp_json_encode( $res );
-	wp_die();
+	unset( $raw['action'], $raw['nonce'] );
+
+	$payload = map_deep(
+		$raw,
+		static function ( $v ) {
+			return is_string( $v ) ? sanitize_text_field( $v ) : $v;
+		}
+	);
+
+	$updated = stm_update_theme_options( $payload );
+
+	if ( $updated ) {
+		wp_send_json_success(
+			array( 'message' => __( 'Settings saved.', 'pearl-header-builder' ) )
+		);
+	}
+
+	wp_send_json_success(
+		array( 'message' => __( 'Nothing to save.', 'pearl-header-builder' ) )
+	);
 }
 add_action( 'wp_ajax_stm_hb_save_settings', 'stm_save_hb_settings' );
 
 function stm_hb_add_new() {
-	if ( ! is_user_logged_in() && ! current_user_can( 'manage_options' ) ) {
+	$hb_action = isset( $_GET['hb_action'] ) ? sanitize_key( wp_unslash( $_GET['hb_action'] ) ) : '';
+	if ( '' === $hb_action ) {
 		return;
 	}
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( ! empty( $_GET['hb'] ) && empty( $_GET['delete_hb'] ) ) {
-		$new_hb_slug = sanitize_title( $_GET['hb'] ); // phpcs:ignore
-		$new_hb_name = sanitize_text_field( $_GET['hb'] ); // phpcs:ignore
+
+	if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$nonce = isset( $_GET['stm_hb_add_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['stm_hb_add_nonce'] ) ) : '';
+	if ( ! wp_verify_nonce( $nonce, 'stm_hb_add_nonce' ) ) {
+		wp_die( esc_html__( 'Invalid nonce. Action not allowed.', 'pearl-header-builder' ) );
+	}
+
+	$hb_raw    = isset( $_GET['hb'] ) ? sanitize_text_field( wp_unslash( $_GET['hb'] ) ) : '';
+	$delete_hb = isset( $_GET['delete_hb'] ) ? sanitize_text_field( wp_unslash( $_GET['delete_hb'] ) ) : '';
+
+	if ( '' !== $hb_raw && '' === $delete_hb ) {
+		$new_hb_name = sanitize_text_field( $hb_raw );
+		$new_hb_slug = sanitize_title( $hb_raw );
 
 		$variants      = stm_get_hb_variants();
 		$variants_name = stm_hb_variants_name();
 
-		if ( empty( $variants[ $new_hb_name ] ) ) {
+		if ( ! isset( $variants[ $new_hb_slug ] ) ) {
 			$variants[ $new_hb_slug ] = $new_hb_name;
 		}
 
 		update_option( $variants_name, $variants );
 	}
 }
-add_action( 'init', 'stm_hb_add_new' );
+add_action( 'admin_init', 'stm_hb_add_new' );
 
 function stm_hb_delete() {
-	if ( empty( $_GET['delete_hb'] ) ) {
+	$delete_flag = isset( $_GET['delete_hb'] ) ? sanitize_text_field( wp_unslash( $_GET['delete_hb'] ) ) : '';
+	if ( '' === $delete_flag ) {
 		return;
 	}
-	if ( ! is_user_logged_in() && ! current_user_can( 'manage_options' ) ) {
+
+	if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
-	if ( empty( $_GET['stm_hb_action_nonce'] ) || ! wp_verify_nonce( $_GET['stm_hb_action_nonce'] ?? '', 'stm_hb_action_nonce' ) ) {
+
+	$nonce = isset( $_GET['stm_hb_action_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['stm_hb_action_nonce'] ) ) : '';
+	if ( ! $nonce || ! wp_verify_nonce( $nonce, 'stm_hb_action_nonce' ) ) {
 		wp_die( esc_html__( 'Invalid nonce. Action not allowed.', 'pearl-header-builder' ) );
 	}
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$hb_name      = stm_hb_save_name();
-	$default_name = stm_hb_default_name();
 
-	if ( $hb_name === $default_name ) {
+	$hb_name_raw  = (string) stm_hb_save_name();
+	$default_name = (string) stm_hb_default_name();
+
+	$hb_name = sanitize_key( $hb_name_raw );
+
+	if ( '' === $hb_name || sanitize_key( $default_name ) === $hb_name ) {
 		return;
 	}
 
-	$variants      = stm_get_hb_variants();
+	$variants = stm_get_hb_variants();
+	if ( ! is_array( $variants ) ) {
+		$variants = array();
+	}
+
 	$variants_name = stm_hb_variants_name();
 
-	if ( ! empty( $variants[ $hb_name ] ) ) {
+	if ( array_key_exists( $hb_name, $variants ) ) {
 		unset( $variants[ $hb_name ] );
 		update_option( $variants_name, $variants );
-		delete_option( $hb_name );
 	}
+
+	delete_option( $hb_name );
 }
 add_action( 'admin_init', 'stm_hb_delete', 0 );
 
-function stm_hb_default_name( $name = true ) {
-	$r = array( 'stm_hb_settings' => esc_html__( 'Default Header', 'pearl-header-builder' ) );
+/**
+ * Get default Header Builder option name or label.
+ *
+ * @param bool $return_key
+ * @return string|array
+ */
+function stm_hb_default_name( bool $return_key = true ) {
+	$option_key   = 'stm_hb_settings';
+	$option_label = esc_html__( 'Default Header', 'pearl-header-builder' );
 
-	if ( $name ) {
-		$r = 'stm_hb_settings';
+	if ( $return_key ) {
+		return $option_key;
 	}
 
-	return $r;
+	return array( $option_key => $option_label );
 }
 
 function stm_hb_save_prefix() {
 	return 'stm_hb_';
 }
 
-function stm_hb_save_name() {
-	$default_name = stm_hb_default_name();
+/**
+ * Resolve current Header Builder option key (slug) to save/use.
+ *
+ * @return string
+ */
+function stm_hb_save_name(): string {
+	$default_key = (string) stm_hb_default_name();
 
-	if ( ! empty( $_GET['hb'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$default_name = sanitize_title( $_GET['hb'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	} elseif ( ! empty( $_POST['hb'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-		$default_name = sanitize_title( $_POST['hb'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	$hb_get_raw = filter_input( INPUT_GET, 'hb', FILTER_UNSAFE_RAW );
+	if ( is_string( $hb_get_raw ) && '' !== $hb_get_raw ) {
+		return sanitize_title( wp_unslash( $hb_get_raw ) );
 	}
 
-	return $default_name;
+	$hb_post_raw = filter_input( INPUT_POST, 'hb', FILTER_UNSAFE_RAW );
+	if ( is_string( $hb_post_raw ) && '' !== $hb_post_raw ) {
+		return sanitize_title( wp_unslash( $hb_post_raw ) );
+	}
+
+	return $default_key;
 }
 
 function stm_hb_current_hb( $slug = '' ) {
@@ -399,8 +462,8 @@ add_action( 'wp_ajax_stm_hb_update_custom_styles_admin', 'stm_hb_update_custom_s
 function stm_hb_export_header() {
 	check_ajax_referer( 'admin_ajax_nonce', 'nonce' );
 
-	$layout_name = sanitize_text_field( $_GET['layout_name'] );
-	$layout_slug = sanitize_title( $_GET['layout'] );
+	$layout_name = isset( $_GET['layout_name'] ) ? sanitize_text_field( wp_unslash( $_GET['layout_name'] ) ) : '';
+	$layout_slug = isset( $_GET['layout'] ) ? sanitize_title( wp_unslash( $_GET['layout'] ) ) : '';
 
 	$hb                = get_option( $layout_slug, array() );
 	$hb['stm_hb_slug'] = $layout_slug;
@@ -424,7 +487,7 @@ function stm_hb_import_header() {
 
 	$r = array();
 
-	$layout_slug = sanitize_title( $_GET['layout'] );
+	$layout_slug = isset( $_GET['layout'] ) ? sanitize_title( wp_unslash( $_GET['layout'] ) ) : '';
 	$json_file   = STM_HB_DIR . 'includes/import/' . $layout_slug . '.json';
 
 	global $wp_filesystem;
@@ -483,24 +546,138 @@ function stm_hb_import_header_file() {
 	check_ajax_referer( 'admin_ajax_nonce', 'nonce' );
 
 	if ( ! current_user_can( 'manage_options' ) ) {
-		die;
+		wp_send_json_error(
+			array( 'message' => esc_html__( 'You are not allowed to perform this action.', 'pearl-header-builder' ) ),
+			403
+		);
 	}
 
-	$file      = $_FILES['file'];
-	$file_path = $file['name'];
-	$ext       = pathinfo( $file_path, PATHINFO_EXTENSION );
-
-	if ( 'json' !== $ext ) {
-		wp_send_json( esc_html__( 'Please, upload json file', 'pearl-header-builder' ) );
+	if ( ! isset( $_POST['layout'] ) ) {
+		wp_send_json_error(
+			array( 'message' => esc_html__( 'Missing layout parameter.', 'pearl-header-builder' ) ),
+			400
+		);
 	}
 
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-	$file_content = json_decode( file_get_contents( $file['tmp_name'] ), true );
+	$layout_key = sanitize_key( wp_unslash( $_POST['layout'] ) );
+	if ( '' === $layout_key ) {
+		wp_send_json_error(
+			array( 'message' => esc_html__( 'Invalid layout key.', 'pearl-header-builder' ) ),
+			400
+		);
+	}
 
-	$current = sanitize_text_field( $_POST['layout'] );
+	if ( ! isset( $_FILES['file'] ) || ! is_array( $_FILES['file'] ) ) {
+		wp_send_json_error(
+			array( 'message' => esc_html__( 'No file uploaded.', 'pearl-header-builder' ) ),
+			400
+		);
+	}
 
-	update_option( $current, $file_content );
+	$tmp_name = '';
+	if ( isset( $_FILES['file']['tmp_name'] ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$candidate = $_FILES['file']['tmp_name'];
 
-	wp_send_json( 1 );
+		if ( is_string( $candidate ) && is_uploaded_file( $candidate ) ) {
+			$tmp_name = $candidate;
+		}
+	}
+
+	$file = isset( $_FILES['file'] ) ? array(
+		'name'     => isset( $_FILES['file']['name'] ) ? sanitize_file_name( $_FILES['file']['name'] ) : '',
+		'type'     => isset( $_FILES['file']['type'] ) ? sanitize_mime_type( $_FILES['file']['type'] ) : '',
+		'tmp_name' => $tmp_name,
+		'error'    => isset( $_FILES['file']['error'] ) ? absint( $_FILES['file']['error'] ) : '',
+		'size'     => isset( $_FILES['file']['size'] ) ? absint( $_FILES['file']['size'] ) : '',
+	) : null;
+
+	if ( ! empty( $file['error'] ) ) {
+		$error_code = (int) $file['error'];
+		$message    = esc_html__( 'Upload failed.', 'pearl-header-builder' );
+
+		switch ( $error_code ) {
+			case UPLOAD_ERR_INI_SIZE:
+			case UPLOAD_ERR_FORM_SIZE:
+				$message = esc_html__( 'The uploaded file exceeds the maximum allowed size.', 'pearl-header-builder' );
+				break;
+			case UPLOAD_ERR_PARTIAL:
+				$message = esc_html__( 'The uploaded file was only partially uploaded.', 'pearl-header-builder' );
+				break;
+			case UPLOAD_ERR_NO_FILE:
+				$message = esc_html__( 'No file was uploaded.', 'pearl-header-builder' );
+				break;
+			case UPLOAD_ERR_NO_TMP_DIR:
+				$message = esc_html__( 'Missing a temporary folder on the server.', 'pearl-header-builder' );
+				break;
+			case UPLOAD_ERR_CANT_WRITE:
+				$message = esc_html__( 'Failed to write file to disk.', 'pearl-header-builder' );
+				break;
+			case UPLOAD_ERR_EXTENSION:
+				$message = esc_html__( 'A PHP extension stopped the file upload.', 'pearl-header-builder' );
+				break;
+		}
+
+		wp_send_json_error( array( 'message' => $message ), 400 );
+	}
+
+	$original_name = isset( $file['name'] ) ? (string) $file['name'] : '';
+	$tmp_name      = isset( $file['tmp_name'] ) ? (string) $file['tmp_name'] : '';
+
+	if ( '' === $original_name || '' === $tmp_name || ! is_readable( $tmp_name ) ) {
+		wp_send_json_error(
+			array( 'message' => esc_html__( 'Invalid uploaded file.', 'pearl-header-builder' ) ),
+			400
+		);
+	}
+
+	$checked = wp_check_filetype_and_ext( $tmp_name, $original_name );
+
+	$ext_from_name  = strtolower( (string) pathinfo( $original_name, PATHINFO_EXTENSION ) );
+	$ext_from_check = isset( $checked['ext'] ) ? strtolower( (string) $checked['ext'] ) : '';
+
+	$ext_ok = ( 'json' === $ext_from_name ) || ( 'json' === $ext_from_check );
+
+	if ( ! $ext_ok ) {
+		wp_send_json_error(
+			array( 'message' => esc_html__( 'Please, upload a valid JSON file.', 'pearl-header-builder' ) ),
+			400
+		);
+	}
+
+	$data = wp_json_file_decode(
+		$tmp_name,
+		array(
+			'associative' => true,
+			'depth'       => 512,
+		)
+	);
+
+	if ( is_wp_error( $data ) || ! is_array( $data ) ) {
+		wp_send_json_error(
+			array( 'message' => esc_html__( 'Uploaded JSON is invalid or malformed.', 'pearl-header-builder' ) ),
+			400
+		);
+	}
+
+	$updated = update_option( $layout_key, $data, false );
+
+	if ( ! $updated ) {
+		wp_send_json_success(
+			array(
+				'message' => esc_html__( 'Layout imported (no changes detected).', 'pearl-header-builder' ),
+				'updated' => false,
+				'option'  => $layout_key,
+			)
+		);
+	}
+
+	wp_send_json_success(
+		array(
+			'message' => esc_html__( 'Layout imported successfully.', 'pearl-header-builder' ),
+			'updated' => true,
+			'option'  => $layout_key,
+		)
+	);
 }
 add_action( 'wp_ajax_stm_hb_import_header_file', 'stm_hb_import_header_file' );

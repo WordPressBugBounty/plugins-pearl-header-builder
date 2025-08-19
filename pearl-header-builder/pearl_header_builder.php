@@ -1,18 +1,23 @@
 <?php
-/*
-Plugin Name: WordPress Header Builder Plugin – Pearl
-Plugin URI: https://stylemixthemes.com/headerbuilder/
-Description: Pearl Header Builder gives you complete freedom to compose a header that perfectly suits your site.
-Author: StylemixThemes
-Author URI: https://stylemixthemes.com
-Version: 1.3.9
+/**
+ * Plugin Name: Pearl - Header Builder
+ * Plugin URI: https://stylemixthemes.com/headerbuilder/
+ * Description: Pearl Header Builder gives you complete freedom to compose a header that perfectly suits your site.
+ * Author: StylemixThemes
+ * Author URI: https://stylemixthemes.com
+ * License: GNU General Public License v2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ * Domain Path: /languages
+ * Text Domain: pearl-header-builder
+ * Tested up to: 6.8
+ * Version: 1.3.13
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-define( 'STM_HB_VER', '1.3.9' );
+define( 'STM_HB_VER', '1.3.13' );
 define( 'STM_HB_DIR', plugin_dir_path( __FILE__ ) );
 define( 'STM_HB_URL', plugins_url( '/', __FILE__ ) );
 define( 'STM_HB_PATH', plugin_basename( __FILE__ ) );
